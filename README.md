@@ -54,3 +54,13 @@ short amount of time of loading in after a load screen.
   
   * Load-In Location bounding boxes are subtly different; they check during the 
 loading screen if the player is going to spawn at a certain location.
+
+Splits may also have several sub-options that dictate when the split occurs. These include:
+
+* Split Immediately: splits the moment the split is triggered.
+
+* Split On Next Quitout: waits until the next loading screen after a quitout to split.
+
+* Split On Next Non-Quitout Loading Screen: wait until the next loading screen that wasn't preceded by a quitout to split.
+
+* If you check none of these, it will default to splitting on the next load screen without checking for a quitout.
