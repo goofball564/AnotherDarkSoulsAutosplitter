@@ -67,3 +67,6 @@ Splits may also have several sub-options that dictate when the split occurs. The
 * Split On Next Non-Quitout Loading Screen: wait until the next loading screen that wasn't preceded by a quitout to split.
 
 * If you check none of these, it will default to splitting on the next load screen without checking for a quitout.
+
+### I'm Having Issues </br>
+Contact me on Discord at Jaaaaack#8889 (name has 5 a's, giraffe profile picture)
