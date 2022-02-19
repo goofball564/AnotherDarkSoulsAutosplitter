@@ -1,5 +1,5 @@
 # AnotherDarkSoulsAutosplitter
-A Cursed Autosplitter for Dark Souls
+A Cursed Autosplitter for Dark Souls: Prepare to Die Edition and Dark Souls: Remastered
 
 ### Current Limitations
 
