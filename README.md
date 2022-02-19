@@ -27,6 +27,9 @@ Select where you want to split in the "Advanced Settings" box. Splits
 do not depend on order and happen the ***first time*** a condition is met
 only.
 
+Start the timer before any split should occur, don't reset the timer in the middle of the run,
+and don't load into the wrong save file during the run.
+
 ### How Splits Work </br>
 
 * NG and NG+ Completion split on the next loading screen
@@ -57,9 +60,9 @@ loading screen if the player is going to spawn at a certain location.
 
 Splits may also have several sub-options that dictate when the split occurs. These include:
 
-* Split Immediately: splits the moment the split is triggered.
+* Split Immediately: split the moment the split is triggered.
 
-* Split On Next Quitout: waits until the next loading screen after a quitout to split.
+* Split On Next Quitout: wait until the next loading screen after a quitout to split.
 
 * Split On Next Non-Quitout Loading Screen: wait until the next loading screen that wasn't preceded by a quitout to split.
 
