@@ -1,6 +1,6 @@
 /* 
 Dark Souls 1 and Remastered Autosplitter But This Time In ASL Script Form
-Version 0.1
+Version 0.1.1
 
 TODO
 - more splits
@@ -240,8 +240,11 @@ startup
 
     vars.EventFlags = new ExpandoObject();
     vars.EventFlags.Ids = new List<string>();
-    vars.EventFlags.MemoryWatchers = new Dictionary<string, MemoryWatcher<uint>>();
+    vars.EventFlags.Offsets = new Dictionary<string, int>();
     vars.EventFlags.Masks = new Dictionary<string, uint>();
+
+    vars.EventFlagOffsets = new ExpandoObject();
+    vars.EventFlagOffsets.MemoryWatchers = new Dictionary<int, MemoryWatcher<uint>>();
 
     vars.Bonfires = new ExpandoObject();
     vars.Bonfires.Ids = new List<string>();
@@ -922,18 +925,26 @@ init
 
     // ---------- EVENT FLAG MEMORY WATCHERS ----------
 
+    vars.OffsetMemoryWatcherExists = new Dictionary<int, bool>();
+
     Action<string> WatchEventFlag = ((flagId) =>
     {
         Tuple<int, uint> tup = vars.GetEventFlagOffsetAndMask(flagId);
         int finalOffset = tup.Item1;
         uint mask = tup.Item2;
         var offsets = new int[] {0, finalOffset};
-
-        var temp = new MemoryWatcher<uint>(new DeepPointer(vars.EventFlagsPtr, offsets));
         
+        vars.EventFlags.Offsets[flagId] = finalOffset;
         vars.EventFlags.Masks[flagId] = mask;
-        vars.EventFlags.MemoryWatchers[flagId] = temp;
-        vars.FlagWatchers.Add(temp);
+
+        if (!vars.OffsetMemoryWatcherExists.ContainsKey(finalOffset))
+        {
+            var temp = new MemoryWatcher<uint>(new DeepPointer(vars.EventFlagsPtr, offsets));
+            vars.EventFlagOffsets.MemoryWatchers[finalOffset] = temp;
+            vars.FlagWatchers.Add(temp);
+
+            vars.OffsetMemoryWatcherExists[finalOffset] = true;
+        }
     });
 
     foreach (string flagId in vars.EventFlags.Ids)
@@ -1077,8 +1088,10 @@ split
     {
         if (settings[flagId] && !vars.SplitTriggered[flagId])
         {
-            MemoryWatcher<uint> flagMem = vars.EventFlags.MemoryWatchers[flagId];
+            int flagOffset = vars.EventFlags.Offsets[flagId];
             uint flagMask = vars.EventFlags.Masks[flagId];
+
+            MemoryWatcher<uint> flagMem = vars.EventFlagOffsets.MemoryWatchers[flagOffset];
 
             // If flag is set.
             if (flagMem.Changed && ((uint) flagMem.Current & flagMask) != 0)
