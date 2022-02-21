@@ -1,6 +1,6 @@
 /* 
 Dark Souls 1 and Remastered Autosplitter But This Time In ASL Script Form
-Version 0.1.1
+Version 0.2
 
 TODO
 - more splits
@@ -818,7 +818,7 @@ init
         vars.BonfireLinkedListFirstItemOffsets = new int[] {0xB48, 0x24, 0x0, 0x0};
         vars.CharacterLoadedOffsets = new int[] {0x0, 0x3C};
         vars.BonfireListSizeOffsets = new int[] {0xB48, 0x28};
-        vars.ClearCountOffsets = new int[] {0x0, 0x3C};
+        vars.ClearCountOffsets = new int[] {0x3C};
         vars.PlayerXOffsets = new int[] {0x4, 0x0, 0x28, 0x1C, 0x10};
         vars.PlayerYOffsets = new int[] {0x4, 0x0, 0x28, 0x1C, 0x14};
         vars.PlayerZOffsets = new int[] {0x4, 0x0, 0x28, 0x1C, 0x18};
