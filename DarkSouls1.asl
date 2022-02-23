@@ -974,8 +974,6 @@ update
     vars.Watchers.UpdateAll(game);
     vars.FlagWatchers.UpdateAll(game);
 
-    // print(vars.InGameTime.Current.ToString());
-
     current.CharLoaded = vars.PtrResolves(vars.CharacterLoadedDeepPtr);
 }
 
@@ -994,12 +992,10 @@ split
         if (vars.InGameTime.Current != 0)
         {
             vars.LoadInInGameTime = vars.InGameTime.Current;
-            print("poop1");
         }
         else
         {
             vars.CheckLoadInInGameTime = true;
-            print("poop2");
         }
 
         vars.CheckInitPosition = true;
@@ -1033,7 +1029,6 @@ split
     {
         vars.LoadInInGameTime = vars.InGameTime.Current;
         vars.CheckLoadInInGameTime = false;
-        print("poop3");
     }
 
     // ---------- QUITOUT DETECTION ----------
@@ -1074,19 +1069,12 @@ split
         {
             foreach (string boxId in vars.UpwarpBoundingBoxes.Ids)
             {
-                // print(boxId);
-                // print(vars.SplitTriggered[boxId].ToString());
                 if (settings[boxId] && !vars.SplitTriggered[boxId])
                 {
-                    print("poop3.5");
                     Tuple<float, float, float, float, float, float> boundingCoords = vars.UpwarpBoundingBoxes.Coords[boxId];
-
-                    print("" + playerCoords.Item1 + " " + playerCoords.Item2 + " " + playerCoords.Item3);
-                    print(vars.SimpleFormattedBoundingBoxString(boundingCoords));
 
                     if (vars.WithinBoundingBox(playerCoords, boundingCoords))
                     {
-                        print("poop6");
                         vars.SplitTriggered[boxId] = true;
                         upwarpDetected = true;
                         break;
@@ -1097,7 +1085,6 @@ split
         
         if (upwarpDetected || vars.InGameTime.Current > vars.LoadInInGameTime + MILLISECONDS_TO_DETECT_UPWARP)
         {
-            print("poop4");
             vars.CheckUpwarp = false;
         }
 
