@@ -1,6 +1,16 @@
 /* 
 Dark Souls 1 and Remastered Autosplitter But This Time In ASL Script Form
-Version 0.2
+Version 0.2.1
+
+Update History:
+    Version 0.3:
+        - Fixed In-Game Time offsets for PTDE
+        - Double checked that the rest of the offsets looked good with my eyeballs
+    Version 0.2:
+        - Performance optimization for event flags
+        - Fixed ClearCount offsets for PTDE
+    Version 0.1:
+        - First public version
 
 TODO
 - more splits
@@ -190,7 +200,7 @@ startup
     // Same format as the above bounding box splits.
     string upwarpBoundingBoxData = @"
         Upwarps
-        171,177,-78.600,-77,-87,-81|Darkroot Basin, Top of Elevator
+        171,177,-78.6,-77,-87,-81|Darkroot Basin, Top of Elevator
     ";
 
     // Bounding box splits triggered based on where the player character is going to load in.
@@ -963,6 +973,8 @@ update
     vars.Watchers.UpdateAll(game);
     vars.FlagWatchers.UpdateAll(game);
 
+    // print(vars.InGameTime.Current.ToString());
+
     current.CharLoaded = vars.PtrResolves(vars.CharacterLoadedDeepPtr);
 }
 
@@ -981,10 +993,12 @@ split
         if (vars.InGameTime.Current != 0)
         {
             vars.LoadInInGameTime = vars.InGameTime.Current;
+            print("poop1");
         }
         else
         {
             vars.CheckLoadInInGameTime = true;
+            print("poop2");
         }
 
         vars.CheckInitPosition = true;
@@ -1018,6 +1032,7 @@ split
     {
         vars.LoadInInGameTime = vars.InGameTime.Current;
         vars.CheckLoadInInGameTime = false;
+        print("poop3");
     }
 
     // ---------- QUITOUT DETECTION ----------
@@ -1058,11 +1073,19 @@ split
         {
             foreach (string boxId in vars.UpwarpBoundingBoxes.Ids)
             {
+                // print(boxId);
+                // print(vars.SplitTriggered[boxId].ToString());
                 if (settings[boxId] && !vars.SplitTriggered[boxId])
                 {
+                    print("poop3.5");
                     Tuple<float, float, float, float, float, float> boundingCoords = vars.UpwarpBoundingBoxes.Coords[boxId];
+
+                    print("" + playerCoords.Item1 + " " + playerCoords.Item2 + " " + playerCoords.Item3);
+                    print(vars.SimpleFormattedBoundingBoxString(boundingCoords));
+
                     if (vars.WithinBoundingBox(playerCoords, boundingCoords))
                     {
+                        print("poop6");
                         vars.SplitTriggered[boxId] = true;
                         upwarpDetected = true;
                         break;
@@ -1073,6 +1096,7 @@ split
         
         if (upwarpDetected || vars.InGameTime.Current > vars.LoadInInGameTime + MILLISECONDS_TO_DETECT_UPWARP)
         {
+            print("poop4");
             vars.CheckUpwarp = false;
         }
 
