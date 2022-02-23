@@ -1,11 +1,12 @@
 /* 
 Dark Souls 1 and Remastered Autosplitter But This Time In ASL Script Form
-Version 0.2.1
+Version 0.2.2
 
 Update History:
     Version 0.3:
         - Fixed In-Game Time offsets for PTDE
         - Double checked that the rest of the offsets looked good with my eyeballs
+        - Tweak Darkroot Basin elevator upwarp bounding box
     Version 0.2:
         - Performance optimization for event flags
         - Fixed ClearCount offsets for PTDE
@@ -200,7 +201,7 @@ startup
     // Same format as the above bounding box splits.
     string upwarpBoundingBoxData = @"
         Upwarps
-        171,177,-78.6,-77,-87,-81|Darkroot Basin, Top of Elevator
+        171,177,-78.65,-77,-87,-81|Darkroot Basin, Top of Elevator
     ";
 
     // Bounding box splits triggered based on where the player character is going to load in.
