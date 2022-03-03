@@ -1,12 +1,12 @@
 /* 
 Dark Souls 1 and Remastered Autosplitter But This Time In ASL Script Form
-Version 0.2.3
+Version 0.3
 
 Update History:
     Version 0.3:
         - Added option for "retroactive" upwarp splitting; if upwarp is 
-        detected, split time is the time during the load screen, not 
-        the current time.
+        detected, split time is set to what the time was during the loading
+        screen, not the current time
         - Fixed In-Game Time offsets for PTDE
         - Double checked that the rest of the offsets looked good with my eyeballs
         - Tweak Darkroot Basin elevator upwarp bounding box
