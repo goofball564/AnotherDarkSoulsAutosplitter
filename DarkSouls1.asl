@@ -1,9 +1,12 @@
 /* 
 Dark Souls 1 and Remastered Autosplitter But This Time In ASL Script Form
-Version 0.2.2
+Version 0.2.3
 
 Update History:
     Version 0.3:
+        - Added option for "retroactive" upwarp splitting; if upwarp is 
+        detected, split time is the time during the load screen, not 
+        the current time.
         - Fixed In-Game Time offsets for PTDE
         - Double checked that the rest of the offsets looked good with my eyeballs
         - Tweak Darkroot Basin elevator upwarp bounding box
@@ -245,6 +248,8 @@ startup
     vars.NG_ID = "ng";
     vars.NG_PLUS_ID = "ng+";
 
+    vars.RETROACTIVE = "retroactive";
+
     vars.EVENT_FLAG_ID_LENGTH = 8;
 
     // ---------- SPLIT TRIGGER INFO VARS ----------
@@ -317,6 +322,7 @@ startup
         vars.LoadingSplitTriggered = false;
         vars.QuitoutSplitTriggered = false;
         vars.NonQuitoutLoadingSplitTriggered = false;
+        vars.RetroactiveSplitTriggered = false;
         
         vars.NGSplitTriggered = false;
 
@@ -325,6 +331,7 @@ startup
 
         vars.CheckLoadInInGameTime = false;
         vars.LoadInInGameTime = 0;
+        vars.LoadInTimerTime = new Time();
 
         vars.QuitoutDetected = false;
     });
@@ -582,6 +589,9 @@ startup
         vars.QUITOUT_SPLIT_TYPE,
         vars.NON_QUITOUT_SPLIT_TYPE,
     };
+
+    settings.Add(vars.RETROACTIVE, false, "Retroactive Upwarp Splits");
+    settings.SetToolTip(vars.RETROACTIVE, "See Readme for Explanation");
 
     settings.Add(vars.NG_ID, false, "NG Completion");
     settings.Add(vars.NG_PLUS_ID, false, "NG+ and Later Completion");
@@ -992,6 +1002,7 @@ split
         if (vars.InGameTime.Current != 0)
         {
             vars.LoadInInGameTime = vars.InGameTime.Current;
+            vars.LoadInTimerTime = timer.CurrentTime;
         }
         else
         {
@@ -1028,6 +1039,7 @@ split
     if (vars.CheckLoadInInGameTime && vars.InGameTime.Current != 0)
     {
         vars.LoadInInGameTime = vars.InGameTime.Current;
+        vars.LoadInTimerTime = timer.CurrentTime;
         vars.CheckLoadInInGameTime = false;
     }
 
@@ -1090,7 +1102,14 @@ split
 
         if (upwarpDetected)
         {
-            split = true;
+            if (settings[vars.RETROACTIVE])
+            {
+                vars.RetroactiveSplitTriggered = true;
+            }
+            else
+            {
+                split = true;
+            }
         }
     }
 
@@ -1278,6 +1297,16 @@ split
     else if (settings[vars.NG_PLUS_ID] && vars.ClearCount.Old > 0 && vars.ClearCount.Current == vars.ClearCount.Old + 1)
     {
         vars.LoadingSplitTriggered = true;
+    }
+
+    // ---------- RETROACTIVE SPLITS (UPWARPS ONLY) ----------
+
+    if (vars.RetroactiveSplitTriggered)
+    {
+        timer.Run[timer.CurrentSplitIndex].SplitTime = vars.LoadInTimerTime;
+        timer.CurrentSplitIndex++;
+        vars.RetroactiveSplitTriggered = false;
+        split = false;
     }
 
     return split;
