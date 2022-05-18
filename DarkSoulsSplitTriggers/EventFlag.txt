@@ -1,0 +1,109 @@
+Bells of Awakening
+11010700|Undead Parish, Upper Bell of Awakening
+11400200|Blighttown, Lower Bell of Awakening
+
+Lordvessel Flags
+11510400|Dark Anor Londo
+11510592|Receive Lordvessel With Gwynevere Still Alive
+50000090|Receive Lordvessel (Gwynevere Alive or Dead)
+
+Boss Deaths
+00000016|Asylum Demon
+00000010|Bed of Chaos
+00000003|Bell Gargoyles
+11210004|Black Dragon Kalameet
+11210063|Black Dragon Kalameet (Goughless)
+11010902|Capra Demon
+11410900|Ceaseless Discharge
+11410901|Centipede Demon
+00000009|Chaos Witch Quelaag
+00000004|Crossbreed Priscilla
+11510900|Dark Sun Gwyndolin
+11410410|Demon Firesage
+00000012|Dragonslayer Ornstein & Executioner Smough
+00000013|Four Kings
+00000002|Gaping Dragon
+00000007|Gravelord Nito
+00000015|Gwyn, Lord of Cinder
+00000011|Iron Golem
+11210001|Knight Artorias
+11210002|Manus, Father of the Abyss
+11200900|Moonlight Butterfly
+00000006|Pinwheel
+11210000|Sanctuary Guardian
+00000014|Seath, the Scaleless
+00000005|Sif, the Great Gray Wolf
+11810900|Stray Demon
+11010901|Taurus Demon
+
+Doors, Elevators, and Shortcuts
+11510220|Anor Londo, Elevator Active
+11510110|Anor Londo, Door to Gwynevere
+61200500|Darkroot Garden, Crest of Artorias Door
+61200501|Darkroot Garden, Sif Door
+11410340|Demon Ruins, Shortcut to Lost Izalith
+11810103|Northern Undead Asylum, Cell Door
+11810112|Northern Undead Asylum, Asylum Demon Door
+11810110|Northern Undead Asylum, Big Pilgrim Door
+
+NPC Flags
+1121|Dusk, Rescued From Golem
+1122|Dusk, Available for Summon (Said Yes After Rescue)
+1125|Dusk, Dead
+1702|Oswald, Dead
+1513|Siegmeyer, Dead
+1764|Shiva Bodyguard, Dead
+
+Ring Item Pickups
+51300020|Catacombs, Darkmoon Seance Ring
+51020130|Firelink Shrine, Ring of Sacrifice
+51810060|Northern Undead Asylum, Rusted Iron Ring
+51310140|Tomb of the Giants, Covetous Silver Serpent Ring
+51600380|Valley of the Drakes, Red Tearstone Ring
+
+Non-Ring Item Pickups
+51510560|Anor Londo, Dragon Tooth
+51200200|Darkroot Basin, Grass Crest Shield
+51810080|Northern Undead Asylum, Peculiar Doll
+							
+Siegmeyer Rings
+50000010|Tiny Being's Ring
+50000070|Speckled Stoneplate Ring (Looted or Given)
+
+Join Covenants
+851|Way of White
+852|Princess Guard
+853|Warrior of Sunlight
+854|Darkwraith
+855|Path of the Dragon
+856|Gravelord Servant
+857|Forest Hunter
+858|Darkmoon Blade
+859|Chaos Servant
+
+Non-Boss Fog Gates
+11510090|Anor Londo, Fog Gate 1 (Rafters)
+11510091|Anor Londo, Fog Gate 2 (Archers)
+11700083|Duke's Archives, Fog Gate
+11810090|Northern Undead Asylum, Fog Gate
+11500090|Sen's Fortress, Fog Gate 1
+11500091|Sen's Fortress, Fog Gate 2
+
+Levers
+11300900|Catacombs, Entrance Lever
+11705091|Duke's Archives, First Lever
+11705090|Duke's Archives, Second Lever
+
+Dialogue
+71010000|Talk to Andre First Time
+
+Boss Fog Gates
+11415390|Bed of Chaos
+11315390|Gravelord Nito
+
+Boss Fight Activated (After Cutscene if Applicable)
+11505394|Iron Golem
+11515394|Ornstein & Smough
+11415382|Centipede Demon Fight Entered
+11705394|Seath Fight Entered
+11805394|Gwyn Fight Entered
