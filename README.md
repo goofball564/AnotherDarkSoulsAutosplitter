@@ -17,7 +17,7 @@ Click it, then click "Download Zip" in the dropdown menu.
 
 ### How to Install </br>
 In Livesplit: Right Click -> Click "Edit Layout" -> Click (+) Button -> Hover Over "Control" -> Click "Scriptable Autosplitter" </br>
-Edit the Scriptable Autosplitter you've added and select the .asl file.
+Edit the Scriptable Autosplitter you've added and select the .asl file. The rest of the included files/folders need to stay in the same directory as the .asl file.
 
 ### How to Use </br>
 Be sure "Split" is checked, under the Script Path you selected. </br>
