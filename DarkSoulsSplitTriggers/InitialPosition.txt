@@ -1,0 +1,14 @@
+Wrong Warp Destination
+120.65,122.65,-80.12,-78.12,123.27,125.27|Kiln of the First Flame
+-51.0,-49.0,-137.5,-135.5,50.0,52.0|New Londo Ruins
+-48.77,-46.77,-22.79,-20.79,-36.62,-34.62|Undead Burg
+87.0,89.0,12.2,14.2,163.0,165.0|Sen's Fortress
+96.94,98.94,-6.128,-4.128,33.92,35.92|Darkroot Garden
+
+Fall Damage Cancel Quitout Location
+250,265,113,123,240,268|Anor Londo Fall Control Quitout (Base of Elevator Tower)
+230,256,134,136,240,268|Anor Londo Meme-rolls (High Platform of Elevator Tower)
+-140,-120,-216,-215,85,100|Blighttown Meme-rolls (In Swamp After Meme-rolls)
+40,45,-165.5,-164.5,53.5,58|Seal Skip (Upper Platform)
+30,40,-169,-167,47.5,56|Seal Skip (Lower Platform)
+-58.44,-56.44,-110.52,-108.52,50.72,52.72|Quitout After BTS Transition Clip

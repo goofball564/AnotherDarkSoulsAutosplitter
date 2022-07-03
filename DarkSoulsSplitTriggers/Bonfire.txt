@@ -1,0 +1,42 @@
+Lordvessel Bonfire
+1801960|Firelink Altar (Place Lordvessel)
+
+Normal Bonfires
+1601950|Abyss
+1511950|Anor Londo (Chamber of the Princess)
+1511961|Anor Londo (Interior)
+1511962|Anor Londo (Darkmoon Tomb)
+1321961|Ash Lake (Bonfire #1)
+1401961|Blighttown (Swamp Bonfire)
+1401962|Blighttown (Bridge Bonfire)
+1301960|Catacombs (Bonfire #1)
+1301961|Catacombs (Behind Illusory Wall)
+1211950|Chasm of the Abyss
+1701950|Crystal Cave
+1601961|Darkroot Basin
+1201961|Darkroot Garden
+1411961|Demon Ruins (Before Ceaseless)
+1411962|Demon Ruins (After Ceaseless)
+1411963|Demon Ruins (After Firesage)
+1001960|Depths
+1701960|Duke's Archives (Balcony)
+1701961|Duke's Archives (Cell)
+1701962|Duke's Archives (Elevator)
+1321962|Great Hollow
+1411950|Lost Izalith (Bed of Chaos)
+1411960|Lost Izalith (Behind Illusory Wall)
+1411964|Lost Izalith (After Centipede Demon)
+1811960|Northern Undead Asylum (Courtyard)
+1811961|Northern Undead Asylum (Interior)
+1211961|Oolacile Sanctuary
+1211962|Oolacile Township
+1211964|Oolacile Township Dungeon
+1101960|Painted World of Ariamis
+1211963|Sanctuary Garden
+1501961|Sen's Fortress
+1311960|Tomb of the Giants (Bonfire #1)
+1311961|Tomb of the Giants (Bonfire #2)
+1311950|Tomb of the Giants (Altar of the Gravelord)
+1011962|Undead Burg
+1011961|Undead Parish (Sunlight Altar)
+1011964|Undead Parish (Andre)

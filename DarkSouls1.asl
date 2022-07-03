@@ -1,8 +1,12 @@
 /* 
 Dark Souls 1 and Remastered Autosplitter But This Time In ASL Script Form
-Version 0.3
+Version 0.4
 
 Update History:
+    Version 0.4:
+        - Added Exit Boss Arena splits
+        - Moved split trigger data to separate text files
+        - Refactored with reflection
     Version 0.3:
         - Added option for "retroactive" upwarp splitting; if upwarp is 
         detected, split time is set to what the time was during the loading
@@ -36,7 +40,7 @@ startup
     // Set lower to improve performance; setting too low may break script, 
     // because the window for detecting loading screens is short;
     // lowering comes at the theoretical cost of less precise split times.
-    refreshRate = 60;
+    refreshRate = 66;
 
     // true: Mousing over split trigger settings shows information about them,
     // e.g., event flag ID, bonfire ID, coordinates of bounding box.
@@ -48,198 +52,8 @@ startup
     //  Stopwatch used in Init block.
     vars.CooldownStopwatch = new Stopwatch();
 
-    // ---------- SPLIT TRIGGER DATA ----------
-
-    // Splits triggered by an event flag being set.
-    // Event flag may be less than 8 characters, or padded to 8 if you wish.
-    // Format: event flag id | event flag description
-    string eventFlagData = @"        
-        Bells of Awakening
-        11010700|Undead Parish, Upper Bell of Awakening
-        11400200|Blighttown, Lower Bell of Awakening
-
-        Lordvessel Flags
-        11510400|Dark Anor Londo
-        11510592|Receive Lordvessel With Gwynevere Still Alive
-        50000090|Receive Lordvessel (Gwynevere Alive or Dead)
-
-        Boss Deaths
-        00000016|Asylum Demon
-        00000010|Bed of Chaos
-        00000003|Bell Gargoyles
-        11210004|Black Dragon Kalameet
-        11210063|Black Dragon Kalameet (Goughless)
-        11010902|Capra Demon
-        11410900|Ceaseless Discharge
-        11410901|Centipede Demon
-        00000009|Chaos Witch Quelaag
-        00000004|Crossbreed Priscilla
-        11510900|Dark Sun Gwyndolin
-        11410410|Demon Firesage
-        00000012|Dragonslayer Ornstein & Executioner Smough
-        00000013|Four Kings
-        00000002|Gaping Dragon
-        00000007|Gravelord Nito
-        00000015|Gwyn, Lord of Cinder
-        00000011|Iron Golem
-        11210001|Knight Artorias
-        11210002|Manus, Father of the Abyss
-        11200900|Moonlight Butterfly
-        00000006|Pinwheel
-        11210000|Sanctuary Guardian
-        00000014|Seath, the Scaleless
-        00000005|Sif, the Great Gray Wolf
-        11810900|Stray Demon
-        11010901|Taurus Demon
-
-        Doors, Elevators, and Shortcuts
-        11510220|Anor Londo, Elevator Active
-        11510110|Anor Londo, Door to Gwynevere
-        61200500|Darkroot Garden, Crest of Artorias Door
-        11410340|Demon Ruins, Shortcut to Lost Izalith
-        11810110|Northern Undead Asylum, Big Pilgrim Door
-
-        NPC Flags
-        1121|Dusk, Rescued From Golem
-        1122|Dusk, Available for Summon (Said Yes After Rescue)
-        1125|Dusk, Dead
-        1702|Oswald, Dead
-        1513|Siegmeyer, Dead
-        1764|Shiva Bodyguard, Dead
-
-        Ring Item Pickups
-        51300020|Catacombs, Darkmoon Seance Ring
-        51020130|Firelink Shrine, Ring of Sacrifice
-        51810060|Northern Undead Asylum, Rusted Iron Ring
-        51310140|Tomb of the Giants, Covetous Silver Serpent Ring
-        51600380|Valley of the Drakes, Red Tearstone Ring
-
-        Non-Ring Item Pickups
-        51510560|Anor Londo, Dragon Tooth
-        51200200|Darkroot Basin, Grass Crest Shield
-        51810080|Northern Undead Asylum, Peculiar Doll
-                                    
-        Siegmeyer Rings
-        50000010|Tiny Being's Ring
-        50000070|Speckled Stoneplate Ring (Looted or Given)
-
-        Join Covenants
-        851|Way of White
-        852|Princess Guard
-        853|Warrior of Sunlight
-        854|Darkwraith
-        855|Path of the Dragon
-        856|Gravelord Servant
-        857|Forest Hunter
-        858|Darkmoon Blade
-        859|Chaos Servant
-    ";
-
-    // TODO
-    // chloranthy ring
-    // dark wood grain ring
-    // white seance ring
-    // hydra dead
-    // embers for all achievements?
-    // ?
-
-    // Splits triggered by a bonfire being lit.
-    // Every bonfire in this list starts out unlit and the autosplitter logic depends on this.
-    // Format: bonfire ID | bonfire description
-    string bonfireLitData = @" 
-        Lordvessel Bonfire
-        1801960|Firelink Altar (Place Lordvessel)
-
-        Normal Bonfires
-        1601950|Abyss
-        1511950|Anor Londo (Chamber of the Princess)
-        1511961|Anor Londo (Interior)
-        1511962|Anor Londo (Darkmoon Tomb)
-        1321961|Ash Lake (Bonfire #1)
-        1401961|Blighttown (Swamp Bonfire)
-        1401962|Blighttown (Bridge Bonfire)
-        1301960|Catacombs (Bonfire #1)
-        1301961|Catacombs (Behind Illusory Wall)
-        1211950|Chasm of the Abyss
-        1701950|Crystal Cave
-        1601961|Darkroot Basin
-        1201961|Darkroot Garden
-        1411961|Demon Ruins (Before Ceaseless)
-        1411962|Demon Ruins (After Ceaseless)
-        1411963|Demon Ruins (After Firesage)
-        1001960|Depths
-        1701960|Duke's Archives (Balcony)
-        1701961|Duke's Archives (Cell)
-        1701962|Duke's Archives (Elevator)
-        1321962|Great Hollow
-        1411950|Lost Izalith (Bed of Chaos)
-        1411960|Lost Izalith (Behind Illusory Wall)
-        1411964|Lost Izalith (After Centipede Demon)
-        1811960|Northern Undead Asylum (Courtyard)
-        1811961|Northern Undead Asylum (Interior)
-        1211961|Oolacile Sanctuary
-        1211962|Oolacile Township
-        1211964|Oolacile Township Dungeon
-        1101960|Painted World of Ariamis
-        1211963|Sanctuary Garden
-        1501961|Sen's Fortress
-        1311960|Tomb of the Giants (Bonfire #1)
-        1311961|Tomb of the Giants (Bonfire #2)
-        1311950|Tomb of the Giants (Altar of the Gravelord)
-        1011962|Undead Burg
-        1011961|Undead Parish (Sunlight Altar)
-        1011964|Undead Parish (Andre)
-    ";
-
-    // Bounding box splits triggered based on where the player is currently.
-    // May have decimals.
-    // Format: x min, x max, y min, y max, z min, z max | description
-    string currentPositionBoundingBoxData = @"     
-        Current Location
-        86,90,16,17,178,179|Sen's Fortress, Gate
-    ";
-
-    // Bounding box splits triggered if player upwarps into them.
-    // (if the player is in them within a certain short amount of time of loading in)
-    // Same format as the above bounding box splits.
-    string upwarpBoundingBoxData = @"
-        Upwarps
-        171,177,-78.65,-77,-87,-81|Darkroot Basin, Top of Elevator
-    ";
-
-    // Bounding box splits triggered based on where the player character is going to load in.
-    // Same format as the above bounding box splits.
-    string loadInBoundingBoxData = @"    
-        Wrong Warp Destination
-        120.65,122.65,-80.12,-78.12,123.27,125.27|Kiln of the First Flame
-        -51.0,-49.0,-137.5,-135.5,50.0,52.0|New Londo Ruins
-        -48.77,-46.77,-22.79,-20.79,-36.62,-34.62|Undead Burg
-        87.0,89.0,12.2,14.2,163.0,165.0|Sen's Fortress
-        96.94,98.94,-6.128,-4.128,33.92,35.92|Darkroot Garden
-
-        Fall Damage Cancel Quitout Location
-        250,265,113,123,240,268|Anor Londo Fall Control Quitout (Base of Elevator Tower)
-        230,256,134,136,240,268|Anor Londo Meme-rolls (High Platform of Elevator Tower)
-        -140,-120,-216,-215,85,100|Blighttown Meme-rolls (In Swamp After Meme-rolls)
-        40,45,-165.5,-164.5,53.5,58|Seal Skip (Upper Platform)
-        30,40,-169,-167,47.5,56|Seal Skip (Lower Platform)
-    ";
-
-    // Splits Triggered by traveling between separate locations in the game.
-    // Format: old area, old world, new area, new world | description
-    string zoneTransitionData = @"
-        Zone Transition
-        1,18,2,10|Undead Asylum to Firelink Shrine
-        2,10,1,18|Firelink Shrine to Undead Asylum
-        0,15,1,15|Sen's Fortress to Anor Londo
-        1,15,0,15|Anor Londo to Sen's Fortress
-        1,15,0,11|Anor Londo to Painted World
-        0,11,1,15|Painted World to Anor Londo
-        0,12,1,12|Darkroot Basin to DLC
-    ";
-
     // ---------- CONSTANTS ----------
-    // Need to be accessed in other blocks, so can't actually be consts.
+    // Can't actually be consts if needed in other blocks.
 
     vars.IMMEDIATE_SPLIT_TYPE = Tuple.Create("imm", "Split Immediately");
     vars.QUITOUT_SPLIT_TYPE = Tuple.Create("quit", "Split On Next Quitout");
@@ -248,75 +62,145 @@ startup
     vars.NG_ID = "ng";
     vars.NG_PLUS_ID = "ng+";
 
-    vars.RETROACTIVE = "retroactive";
+    vars.RETROACTIVE_ID = "retroactive";
 
     vars.EVENT_FLAG_ID_LENGTH = 8;
 
+    const string scriptFileName = "DarkSouls1.asl";
+
+    const string splitTriggersFolderName = "DarkSoulsSplitTriggers";
+
+    const string eventFlagFileName = "EventFlag.txt";
+    const string bonfireLitFileName = "Bonfire.txt";
+    const string currentPositionFileName = "CurrentPosition.txt";
+    const string upwarpFileName = "Upwarp.txt";
+    const string initialPositionFileName = "InitialPosition.txt";
+    const string zoneTransitionFileName = "ZoneTransition.txt";
+    const string bossArenaExitFileName = "BossArenaExit.txt";
+
+    const string srcFolderName = "src";
+
+    const string splitTriggersSrcFileName = "SplitTriggers.cs";
+
+    // ---------- GET PATH OF THIS SCRIPT ----------
+
+    string scriptPath = "";
+
+    // This method is extremely hacky; the working directory when the code is
+    // executing is LiveSplit's directory. Get the directory of the script by
+    // iterating through the Layout Components, find the component that loads
+    // this script, and get the path from the component's settings.
+    // Also, LiveSplit.UI.Components.ASLComponent doesn't seem to be in the
+    // namespace accessible from ASL Scripts, so we can't check if an object is
+    // that type directly and instead use a string comparison.
+    var doc = new System.Xml.XmlDocument();
+    foreach(LiveSplit.UI.Components.ILayoutComponent ilc in timer.Layout.LayoutComponents)
+    {
+        LiveSplit.UI.Components.IComponent component = ilc.Component;
+        if (component.GetType().ToString() == "LiveSplit.UI.Components.ASLComponent")
+        {
+            System.Xml.XmlNode componentSettings = component.GetSettings(doc);
+            string path = componentSettings["ScriptPath"].FirstChild.Value;
+            if (path.EndsWith(scriptFileName))
+            {
+                scriptPath = path;
+                break;
+            }
+        }
+    }
+
+    string scriptDirectory = Directory.GetParent(scriptPath).ToString();
+    
+    string splitTriggersDirectory = Path.Combine(scriptDirectory, splitTriggersFolderName);
+    string srcDirectory = Path.Combine(scriptDirectory, srcFolderName);
+
+    Directory.CreateDirectory(splitTriggersDirectory);
+    Directory.CreateDirectory(srcDirectory);
+
+    Type EventFlagSplitTrigger;
+    Type BonfireLitSplitTrigger;
+    Type BoundingBoxSplitTrigger;
+    Type ZoneTransitionSplitTrigger;
+    Type BossArenaExitSplitTrigger;
+    using (var provider = new Microsoft.CSharp.CSharpCodeProvider())
+    {
+        var parameters = new System.CodeDom.Compiler.CompilerParameters
+        {
+            GenerateInMemory = true,
+            ReferencedAssemblies = { "System.dll", "System.Runtime.dll", "System.Collections.dll" }
+        };
+
+        var source = File.ReadAllText(Path.Combine(srcDirectory, splitTriggersSrcFileName));
+        var assembly = provider.CompileAssemblyFromSource(parameters, source);
+
+        foreach (var error in assembly.Errors)
+            print(error.ToString());
+
+        EventFlagSplitTrigger = assembly.CompiledAssembly.GetType("SplitTriggers.EventFlagSplitTrigger", true);
+        BonfireLitSplitTrigger = assembly.CompiledAssembly.GetType("SplitTriggers.BonfireLitSplitTrigger", true);
+        BoundingBoxSplitTrigger = assembly.CompiledAssembly.GetType("SplitTriggers.BoundingBoxSplitTrigger", true);
+        ZoneTransitionSplitTrigger = assembly.CompiledAssembly.GetType("SplitTriggers.ZoneTransitionSplitTrigger", true);
+        BossArenaExitSplitTrigger = assembly.CompiledAssembly.GetType("SplitTriggers.BossArenaExitSplitTrigger", true);
+    }
+
     // ---------- SPLIT TRIGGER INFO VARS ----------
 
-    vars.EventFlags = new ExpandoObject();
-    vars.EventFlags.Ids = new List<string>();
-    vars.EventFlags.Offsets = new Dictionary<string, int>();
-    vars.EventFlags.Masks = new Dictionary<string, uint>();
+    Type eventFlagListType = typeof(List<>).MakeGenericType(EventFlagSplitTrigger);
+    vars.EventFlags = Activator.CreateInstance(eventFlagListType);
 
-    vars.EventFlagOffsets = new ExpandoObject();
-    vars.EventFlagOffsets.MemoryWatchers = new Dictionary<int, MemoryWatcher<uint>>();
+    // Type bonfireDictType = typeof(Dictionary<,>).MakeGenericType(typeof(int), BonfireLitSplitTrigger);
+    // vars.Bonfires = Activator.CreateInstance(bonfireDictType);
 
-    vars.Bonfires = new ExpandoObject();
-    vars.Bonfires.Ids = new List<string>();
+    vars.Bonfires = new Dictionary<int, dynamic>();
 
-    vars.CurrentPositionBoundingBoxes = new ExpandoObject();
-    vars.CurrentPositionBoundingBoxes.Ids = new List<string>();
-    vars.CurrentPositionBoundingBoxes.Coords = new Dictionary<string, Tuple<float, float, float, float, float, float>>();
-
-    vars.UpwarpBoundingBoxes = new ExpandoObject();
-    vars.UpwarpBoundingBoxes.Ids = new List<string>();
-    vars.UpwarpBoundingBoxes.Coords = new Dictionary<string, Tuple<float, float, float, float, float, float>>();
-
-    vars.LoadInBoundingBoxes = new ExpandoObject();
-    vars.LoadInBoundingBoxes.Ids = new List<string>();
-    vars.LoadInBoundingBoxes.Coords = new Dictionary<string, Tuple<float, float, float, float, float, float>>();
+    Type boundingBoxListType = typeof(List<>).MakeGenericType(BoundingBoxSplitTrigger);
+    vars.CurrentPositionBoundingBoxes = Activator.CreateInstance(boundingBoxListType);
+    vars.UpwarpBoundingBoxes = Activator.CreateInstance(boundingBoxListType);
+    vars.InitialPositionBoundingBoxes = Activator.CreateInstance(boundingBoxListType);
     
-    vars.ZoneTransitions = new ExpandoObject();
-    vars.ZoneTransitions.Ids = new List<string>();
-    vars.ZoneTransitions.Tuples = new Dictionary<string, Tuple<int, int, int, int>>();
+    Type zoneTransitionListType = typeof(List<>).MakeGenericType(ZoneTransitionSplitTrigger);
+    vars.ZoneTransitions = Activator.CreateInstance(zoneTransitionListType);
+
+    Type bossArenaExitListType = typeof(List<>).MakeGenericType(BossArenaExitSplitTrigger);
+    vars.BossArenaExits = Activator.CreateInstance(bossArenaExitListType);
 
     // ---------- SPLIT LOGIC VARS ----------
 
-    // Dictionary of bools that are initialized false and set true if a 
-    // specific split has been triggered; used to avoid double splits.
-    vars.SplitTriggered = new Dictionary<string, bool>();
-
     vars.ResetSplitLogic = (Action) (() => 
     {
-        foreach(string flagId in vars.EventFlags.Ids)
+        foreach(dynamic eventFlag in vars.EventFlags)
         {
-            vars.SplitTriggered[flagId] = false;
+            eventFlag.Triggered = false;
         }
 
-        foreach(string bonfireId in vars.Bonfires.Ids)
+        foreach(dynamic bonfire in vars.Bonfires.Values)
         {
-            vars.SplitTriggered[bonfireId] = false;
+            bonfire.Triggered = false;
         }
 
-        foreach(string boxId in vars.CurrentPositionBoundingBoxes.Ids)
+        foreach(dynamic boundingBox in vars.CurrentPositionBoundingBoxes)
         {
-            vars.SplitTriggered[boxId] = false;
+            boundingBox.Triggered = false;
         }
 
-        foreach(string boxId in vars.UpwarpBoundingBoxes.Ids)
+        foreach(dynamic boundingBox in vars.UpwarpBoundingBoxes)
         {
-            vars.SplitTriggered[boxId] = false;
+            boundingBox.Triggered = false;
         }
 
-        foreach(string boxId in vars.LoadInBoundingBoxes.Ids)
+        foreach(dynamic boundingBox in vars.InitialPositionBoundingBoxes)
         {
-            vars.SplitTriggered[boxId] = false;
+            boundingBox.Triggered = false;
         }
 
-        foreach(string zoneTransitionId in vars.ZoneTransitions.Ids)
+        foreach(dynamic zoneTransition in vars.ZoneTransitions)
         {
-            vars.SplitTriggered[zoneTransitionId] = false;
+            zoneTransition.Triggered = false;
+        }
+
+        foreach(dynamic bossArenaExit in vars.BossArenaExits)
+        {
+            bossArenaExit.Triggered = false;
         }
 
         vars.LoadingSplitTriggered = false;
@@ -336,168 +220,17 @@ startup
         vars.QuitoutDetected = false;
     });
 
-    // ---------- BOUNDING BOX FUNCTIONS ----------
-
-    vars.WithinBoundingBox = (Func<Tuple<float, float, float>, Tuple<float, float, float, float, float, float>, bool>) ((coords, boundingCoords) =>
-    {
-        float x = coords.Item1;
-        float y = coords.Item2;
-        float z = coords.Item3;
-
-        float minX = boundingCoords.Item1;
-        float maxX = boundingCoords.Item2;
-        float minY = boundingCoords.Item3;
-        float maxY = boundingCoords.Item4;
-        float minZ = boundingCoords.Item5;
-        float maxZ = boundingCoords.Item6;
-
-        return x >= minX && x <= maxX && y >= minY && y <= maxY && z >= minZ && z <= maxZ;  
-    });
-
-    vars.PrettyFormattedBoundingBoxString = (Func<Tuple<float, float, float, float, float, float>, string>) ((boundingCoords) =>
-    {
-        return "X Min: " + boundingCoords.Item1 + ", X Max: " + boundingCoords.Item2 + ", Y Min: " + boundingCoords.Item3 + ", Y Max: " + boundingCoords.Item4 + ", Z Min: " + boundingCoords.Item5 + ", Z Max: " + boundingCoords.Item6;
-    });
-
-    vars.SimpleFormattedBoundingBoxString = (Func<Tuple<float, float, float, float, float, float>, string>) ((boundingCoords) =>
-    {
-        return "" + boundingCoords.Item1 + "," + boundingCoords.Item2 + "," + boundingCoords.Item3 + "," + boundingCoords.Item4 + "," + boundingCoords.Item5 + "," + boundingCoords.Item6;
-    });
-
-    vars.ParseBoundingBox = (Func<string, Tuple<float, float, float, float, float, float>>) ((coordsString) =>
-    {
-        const int BOUNDING_BOX_TUPLE_LENGTH = 6;
-
-        string[] coordsSplit = coordsString.Split(',');
-        float[] coords = new float[BOUNDING_BOX_TUPLE_LENGTH];
-        if (coordsSplit.Length != BOUNDING_BOX_TUPLE_LENGTH)
-        {
-            throw new ArgumentException("Bounding box must have 6 values: x min, x max, y min, y max, z min, z max: " + coordsString);
-        }
-
-        for(int i = 0; i < BOUNDING_BOX_TUPLE_LENGTH; i++)
-        {
-            coords[i] = Single.Parse(coordsSplit[i].Trim());
-        }
-
-        return Tuple.Create(coords[0], coords[1], coords[2], coords[3], coords[4], coords[5]);
-    });
-
     // ---------- BONFIRE FUNCTIONS ----------
 
-    vars.BonfireIdIsValid = (Func<string, bool>) ((bonfireId) =>
-    {
-        const int BONFIRE_ID_LENGTH = 7;
+    // vars.BonfireIdIsValid = (Func<string, bool>) ((bonfireId) =>
+    // {
+    //     const int BONFIRE_ID_LENGTH = 7;
 
-        int idInt;
-        if (bonfireId.Length != BONFIRE_ID_LENGTH || !Int32.TryParse(bonfireId, out idInt))
-            return false;
-        return true;        
-    });
-
-    // ---------- EVENT FLAG FUNCTIONS ----------
-
-    vars.EventFlagGroups = new Dictionary<string, int>()
-    {
-        {"0", 0x00000},
-        {"1", 0x00500},
-        {"5", 0x05F00},
-        {"6", 0x0B900},
-        {"7", 0x11300},
-    };
-
-    vars.EventFlagAreas = new Dictionary<string, int>()
-    {
-        {"000", 00},
-        {"100", 01},
-        {"101", 02},
-        {"102", 03},
-        {"110", 04},
-        {"120", 05},
-        {"121", 06},
-        {"130", 07},
-        {"131", 08},
-        {"132", 09},
-        {"140", 10},
-        {"141", 11},
-        {"150", 12},
-        {"151", 13},
-        {"160", 14},
-        {"170", 15},
-        {"180", 16},
-        {"181", 17},
-    };
-
-    vars.EventFlagIsValid = (Func<string, bool>) ((id) =>
-    {
-        id = id.PadLeft(vars.EVENT_FLAG_ID_LENGTH, '0');
-
-        int i;
-        string group = id.Substring(0, 1);
-        string area = id.Substring(1, 3);
-
-        if (id.Length != vars.EVENT_FLAG_ID_LENGTH || !Int32.TryParse(id, out i))
-            return false;
-        if (!vars.EventFlagGroups.ContainsKey(group) || !vars.EventFlagAreas.ContainsKey(area))
-            return false;
-
-        return true;
-    });
-
-    vars.GetEventFlagOffsetAndMask = (Func<string, Tuple<int, uint>>) ((id) =>
-    {
-        id = id.PadLeft(vars.EVENT_FLAG_ID_LENGTH, '0');
-
-        if (!vars.EventFlagIsValid(id))
-        {
-            throw new ArgumentException("Invalid event flag ID: " + id);
-        }
-
-        string group = id.Substring(0, 1);
-        string area = id.Substring(1, 3);
-        int section = Int32.Parse(id.Substring(4, 1));
-        int number = Int32.Parse(id.Substring(5, 3));
-
-        int offset = vars.EventFlagGroups[group];
-        offset += vars.EventFlagAreas[area] * 0x500;
-        offset += section * 128;
-        offset += (number - (number % 32)) / 8;
-
-        uint mask = 0x80000000 >> (number % 32);
-
-        return Tuple.Create(offset, mask);
-    });
-
-    // ---------- ZONE TRANSITION FUNCTIONS ----------
-
-    vars.ZoneTransitionTupleToId = (Func<Tuple<int, int, int, int>, string>) ((zoneTransitionTuple) =>
-    {
-        return "" + zoneTransitionTuple.Item1 + "," + zoneTransitionTuple.Item2 + "," + zoneTransitionTuple.Item3 + "," + zoneTransitionTuple.Item4; 
-    });
-
-    vars.ZoneTransitionTupleToToolTip = (Func<Tuple<int, int, int, int>, string>) ((zoneTransitionTuple) =>
-    {
-        return "Old Area: " + zoneTransitionTuple.Item1 + ", Old World: " + zoneTransitionTuple.Item2 + ", New Area: " + zoneTransitionTuple.Item3 + ", New World: " + zoneTransitionTuple.Item4; 
-    });
-
-    vars.ParseZoneTransition = (Func<string, Tuple<int, int, int, int>>) ((zoneTransitionString) =>
-    {
-        const int ZONE_TRANSITION_TUPLE_LENGTH = 4;
-
-        string[] zoneTransitionSplit = zoneTransitionString.Split(',');
-        var zoneTransition = new int[ZONE_TRANSITION_TUPLE_LENGTH];
-        if (zoneTransition.Length != ZONE_TRANSITION_TUPLE_LENGTH)
-        {
-            throw new ArgumentException("Zone Transition must have 4 values: old area, old world, new area, new world: " + zoneTransition);
-        }
-
-        for(int i = 0; i < ZONE_TRANSITION_TUPLE_LENGTH; i++)
-        {
-            zoneTransition[i] = Int32.Parse(zoneTransitionSplit[i].Trim());
-        }
-
-        return Tuple.Create(zoneTransition[0], zoneTransition[1], zoneTransition[2], zoneTransition[3]);
-    });
+    //     int idInt;
+    //     if (bonfireId.Length != BONFIRE_ID_LENGTH || !Int32.TryParse(bonfireId, out idInt))
+    //         return false;
+    //     return true;        
+    // });
 
     // ---------- SETTINGS ACTIONS ----------
 
@@ -505,13 +238,16 @@ startup
 
     vars.CreateSplitTriggerSetting = (Action<string, string, string>) ((id, description, parent) =>
     {
-        if (!vars.ParentSettingsAdded.ContainsKey(parent))
+        if (parent != "" && !vars.ParentSettingsAdded.ContainsKey(parent))
         {
             settings.Add(parent, true);
             vars.ParentSettingsAdded[parent] = true;
         }
 
-        settings.Add(id, false, description, parent);
+        if (parent != "")
+            settings.Add(id, false, description, parent);
+        else
+            settings.Add(id, false, description);
     });
 
     vars.CreateSplitTypeSettings = (Action<string, List<Tuple<string, string>>>) ((splitTriggerId, splitTypes) =>
@@ -554,10 +290,6 @@ startup
                     {
                         throw new ArgumentException("Data contains incorrectly formatted line (no split trigger description after | separator): \n" + line);
                     }
-                    if (currentCategory == "")
-                    {
-                        throw new ArgumentException("Uncatgorized split trigger: \n" + line);
-                    }
 
                     var arr = new string[] {splitTriggerId, splitTriggerDescription, currentCategory};
                     parsedDataList.Add(arr);
@@ -582,185 +314,181 @@ startup
         vars.NON_QUITOUT_SPLIT_TYPE,
     };
 
-    var noSplitTypes = new List<Tuple<string, string>> {};
+    const string EVENT_FLAGS = "Event Flags";
+    const string BONFIRES_LIT = "Bonfires Lit";
+    const string BOUNDING_BOX = "Bounding Box";
+    const string CURRENT_POSITION = "Current Position";
+    const string UPWARP = "Upwarps";
+    const string LOAD_IN = "Location On Load In";
+    const string ZONE_TRANSITION = "Zone Transitions";
+    const string BOSS_ARENA = "Exit Boss Arena";
 
-    var currentPositionBoundingBoxSplitTypes = new List<Tuple<string, string>>
-    {
-        vars.QUITOUT_SPLIT_TYPE,
-        vars.NON_QUITOUT_SPLIT_TYPE,
-    };
-
-    settings.Add(vars.RETROACTIVE, false, "Retroactive Upwarp Splits");
-    settings.SetToolTip(vars.RETROACTIVE, "See Readme for Explanation");
+    settings.Add(vars.RETROACTIVE_ID, false, "Retroactive Upwarp Splits");
+    settings.SetToolTip(vars.RETROACTIVE_ID, "See Readme for Explanation");
 
     settings.Add(vars.NG_ID, false, "NG Completion");
     settings.Add(vars.NG_PLUS_ID, false, "NG+ and Later Completion");
 
-    settings.CurrentDefaultParent = null;
-    const string EVENT_FLAGS = "Event Flags";
     settings.Add(EVENT_FLAGS, true);
-    settings.CurrentDefaultParent = EVENT_FLAGS;
+    settings.Add(BONFIRES_LIT, true);
+    settings.Add(BOUNDING_BOX, true);
+    settings.Add(CURRENT_POSITION, true, CURRENT_POSITION, BOUNDING_BOX);
+    settings.Add(UPWARP, true, UPWARP, BOUNDING_BOX);
+    settings.Add(LOAD_IN, true, LOAD_IN, BOUNDING_BOX);
+    settings.Add(ZONE_TRANSITION, true);
+    settings.Add(BOSS_ARENA, true);
 
+    string eventFlagData = File.ReadAllText(Path.Combine(splitTriggersDirectory, eventFlagFileName));
     List<string[]> eventFlagSettings = vars.ParseSplitTriggerData(eventFlagData);
 
+    settings.CurrentDefaultParent = EVENT_FLAGS;
     foreach (string[] eventFlagSetting in eventFlagSettings)
     {
-        string id = eventFlagSetting[0];
+        string parameters = eventFlagSetting[0];
         string description = eventFlagSetting[1];
         string parent = eventFlagSetting[2];
 
-        id = id.PadLeft(vars.EVENT_FLAG_ID_LENGTH, '0');
+        dynamic eventFlag = EventFlagSplitTrigger.GetMethod("Parse").Invoke(null, new object[] {parameters});
+        vars.EventFlags.Add(eventFlag);
 
-        if (!vars.EventFlagIsValid(id))
-            throw new ArgumentException("Invalid event flag ID: " + id);
-
-        vars.EventFlags.Ids.Add(id);
-
-        vars.CreateSplitTriggerSetting(id, description, parent);
-        vars.CreateSplitTypeSettings(id, allSplitTypes);
+        vars.CreateSplitTriggerSetting(eventFlag.SettingsId, description, parent);
+        vars.CreateSplitTypeSettings(eventFlag.SettingsId, allSplitTypes);
 
         if (vars.DebugToolTips)
         {
-            string toolTip = "Event Flag ID: " + id;
-            settings.SetToolTip(id, toolTip);
+            settings.SetToolTip(eventFlag.SettingsId, eventFlag.ToolTip);
         }
     }
-    
-    settings.CurrentDefaultParent = null;
-    const string BONFIRES_LIT = "Bonfires Lit";
-    settings.Add(BONFIRES_LIT, true);
-    settings.CurrentDefaultParent = BONFIRES_LIT;
 
+    string bonfireLitData = File.ReadAllText(Path.Combine(splitTriggersDirectory, bonfireLitFileName));
     List<string[]> bonfireLitSettings = vars.ParseSplitTriggerData(bonfireLitData);
 
+    settings.CurrentDefaultParent = BONFIRES_LIT;
     foreach (string[] bonfireLitSetting in bonfireLitSettings)
     {
-        string id = bonfireLitSetting[0];
+        string parameters = bonfireLitSetting[0];
         string description = bonfireLitSetting[1];
         string parent = bonfireLitSetting[2];
 
-        if (!vars.BonfireIdIsValid(id))
-            throw new ArgumentException("Invalid bonfire ID format: " + id);
+        dynamic bonfire = BonfireLitSplitTrigger.GetMethod("Parse").Invoke(null, new object[] {parameters});
+        vars.Bonfires[bonfire.BonfireId] = bonfire;
 
-        vars.Bonfires.Ids.Add(id);
-
-        vars.CreateSplitTriggerSetting(id, description, parent);
-        vars.CreateSplitTypeSettings(id, allSplitTypes);
+        vars.CreateSplitTriggerSetting(bonfire.SettingsId, description, parent);
+        vars.CreateSplitTypeSettings(bonfire.SettingsId, allSplitTypes);
 
         if (vars.DebugToolTips)
         {
-            string toolTip = "Bonfire ID: " + id;
-            settings.SetToolTip(id, toolTip);
+            settings.SetToolTip(bonfire.SettingsId, bonfire.ToolTip);
         }
     }
 
-    settings.CurrentDefaultParent = null;
-    const string BOUNDING_BOX = "Bounding Box";
-    settings.Add(BOUNDING_BOX, true);
-    settings.CurrentDefaultParent = BOUNDING_BOX;
-
+    string currentPositionBoundingBoxData = File.ReadAllText(Path.Combine(splitTriggersDirectory, currentPositionFileName));
     List<string[]> currentPositionBoundingBoxSettings = vars.ParseSplitTriggerData(currentPositionBoundingBoxData);
 
+    settings.CurrentDefaultParent = CURRENT_POSITION;
     foreach (string[] currentPositionBoundingBoxSetting in currentPositionBoundingBoxSettings)
     {
-        string boundingCoordsString = currentPositionBoundingBoxSetting[0];
+        string parameters = currentPositionBoundingBoxSetting[0];
         string description =  currentPositionBoundingBoxSetting[1];
         string parent = currentPositionBoundingBoxSetting[2];
 
-        var boundingCoords = vars.ParseBoundingBox(boundingCoordsString);
-        string id = vars.SimpleFormattedBoundingBoxString(boundingCoords);
+        dynamic boundingBox = BoundingBoxSplitTrigger.GetMethod("Parse").Invoke(null, new object[] {parameters});
+        vars.CurrentPositionBoundingBoxes.Add(boundingBox);
 
-        vars.CurrentPositionBoundingBoxes.Ids.Add(id);
-        vars.CurrentPositionBoundingBoxes.Coords[id] = boundingCoords;
-
-        vars.CreateSplitTriggerSetting(id, description, parent);
-        vars.CreateSplitTypeSettings(id, currentPositionBoundingBoxSplitTypes);
+        vars.CreateSplitTriggerSetting(boundingBox.SettingsId, description, parent);
+        vars.CreateSplitTypeSettings(boundingBox.SettingsId, allSplitTypes);
 
         if (vars.DebugToolTips)
         {
-            string toolTip = vars.PrettyFormattedBoundingBoxString(boundingCoords);
-            settings.SetToolTip(id, toolTip);
+            settings.SetToolTip(boundingBox.SettingsId, boundingBox.ToolTip);
         }
     }
 
-    settings.CurrentDefaultParent = BOUNDING_BOX;
-
+    string upwarpBoundingBoxData = File.ReadAllText(Path.Combine(splitTriggersDirectory, upwarpFileName));
     List<string[]> upwarpBoundingBoxSettings = vars.ParseSplitTriggerData(upwarpBoundingBoxData);
 
+    settings.CurrentDefaultParent = UPWARP;
     foreach (string[] upwarpBoundingBoxSetting in upwarpBoundingBoxSettings)
     {
-        string boundingCoordsString = upwarpBoundingBoxSetting[0];
+        string parameters = upwarpBoundingBoxSetting[0];
         string description =  upwarpBoundingBoxSetting[1];
         string parent = upwarpBoundingBoxSetting[2];
 
-        var boundingCoords = vars.ParseBoundingBox(boundingCoordsString);
-        string id = vars.SimpleFormattedBoundingBoxString(boundingCoords);
+        dynamic boundingBox = BoundingBoxSplitTrigger.GetMethod("Parse").Invoke(null, new object[] {parameters});
+        vars.UpwarpBoundingBoxes.Add(boundingBox);
 
-        vars.UpwarpBoundingBoxes.Ids.Add(id);
-        vars.UpwarpBoundingBoxes.Coords[id] = boundingCoords;
-
-        vars.CreateSplitTriggerSetting(id, description, parent);
-        vars.CreateSplitTypeSettings(id, noSplitTypes);
+        vars.CreateSplitTriggerSetting(boundingBox.SettingsId, description, parent);
+        // vars.CreateSplitTypeSettings(boundingBox.SettingsId, allSplitTypes);
 
         if (vars.DebugToolTips)
         {
-            string toolTip = vars.PrettyFormattedBoundingBoxString(boundingCoords);
-            settings.SetToolTip(id, toolTip);
+            settings.SetToolTip(boundingBox.SettingsId, boundingBox.ToolTip);
         }
     }
 
-    settings.CurrentDefaultParent = BOUNDING_BOX;
-    const string LOAD_IN = "Location On Load In";
-    settings.Add(LOAD_IN, true, LOAD_IN, settings.CurrentDefaultParent);
+    string initialPositionBoundingBoxData = File.ReadAllText(Path.Combine(splitTriggersDirectory, initialPositionFileName));
+    List<string[]> initialPositionBoundingBoxSettings = vars.ParseSplitTriggerData(initialPositionBoundingBoxData);
+
     settings.CurrentDefaultParent = LOAD_IN;
-
-    List<string[]> loadInBoundingBoxSettings = vars.ParseSplitTriggerData(loadInBoundingBoxData);
-
-    foreach (string[] loadInBoundingBoxSetting in loadInBoundingBoxSettings)
+    foreach (string[] initialPositionBoundingBoxSetting in initialPositionBoundingBoxSettings)
     {
-        string boundingCoordsString = loadInBoundingBoxSetting[0];
-        string description =  loadInBoundingBoxSetting[1];
-        string parent = loadInBoundingBoxSetting[2];
+        string parameters = initialPositionBoundingBoxSetting[0];
+        string description =  initialPositionBoundingBoxSetting[1];
+        string parent = initialPositionBoundingBoxSetting[2];
 
-        var boundingCoords = vars.ParseBoundingBox(boundingCoordsString);
-        string id = vars.SimpleFormattedBoundingBoxString(boundingCoords);
+        dynamic boundingBox = BoundingBoxSplitTrigger.GetMethod("Parse").Invoke(null, new object[] {parameters});
+        vars.InitialPositionBoundingBoxes.Add(boundingBox);
 
-        vars.LoadInBoundingBoxes.Ids.Add(id);
-        vars.LoadInBoundingBoxes.Coords[id] = boundingCoords;
-
-        vars.CreateSplitTriggerSetting(id, description, parent);
-        vars.CreateSplitTypeSettings(id, noSplitTypes);
+        vars.CreateSplitTriggerSetting(boundingBox.SettingsId, description, parent);
+        // vars.CreateSplitTypeSettings(boundingBox.SettingsId, allSplitTypes);
 
         if (vars.DebugToolTips)
         {
-            string toolTip = vars.PrettyFormattedBoundingBoxString(boundingCoords);
-            settings.SetToolTip(id, toolTip);
+            settings.SetToolTip(boundingBox.SettingsId, boundingBox.ToolTip);
         }
     }
-
-    settings.CurrentDefaultParent = null;
     
+    string zoneTransitionData = File.ReadAllText(Path.Combine(splitTriggersDirectory, zoneTransitionFileName));
     List<string[]> zoneTransitionSettings = vars.ParseSplitTriggerData(zoneTransitionData);
 
+    settings.CurrentDefaultParent = ZONE_TRANSITION;
     foreach (string[] zoneTransitionSetting in zoneTransitionSettings)
     {
-        string zoneTransitionString = zoneTransitionSetting[0];
+        string parameters = zoneTransitionSetting[0];
         string description =  zoneTransitionSetting[1];
         string parent = zoneTransitionSetting[2];
 
-        var zoneTransitionTuple = vars.ParseZoneTransition(zoneTransitionString);
-        string id = vars.ZoneTransitionTupleToId(zoneTransitionTuple);
+        dynamic zoneTransition = ZoneTransitionSplitTrigger.GetMethod("Parse").Invoke(null, new object[] {parameters});
+        vars.ZoneTransitions.Add(zoneTransition);
 
-        vars.ZoneTransitions.Ids.Add(id);
-        vars.ZoneTransitions.Tuples[id] = zoneTransitionTuple;
-
-        vars.CreateSplitTriggerSetting(id, description, parent);
-        vars.CreateSplitTypeSettings(id, allSplitTypes);
+        vars.CreateSplitTriggerSetting(zoneTransition.SettingsId, description, parent);
+        vars.CreateSplitTypeSettings(zoneTransition.SettingsId, allSplitTypes);
 
         if (vars.DebugToolTips)
         {
-            string toolTip = vars.ZoneTransitionTupleToToolTip(zoneTransitionTuple);
-            settings.SetToolTip(id, toolTip);
+            settings.SetToolTip(zoneTransition.SettingsId, zoneTransition.ToolTip);
+        }
+    }
+
+    string bossArenaExitData = File.ReadAllText(Path.Combine(splitTriggersDirectory, bossArenaExitFileName));
+    List<string[]> bossArenaExitSettings = vars.ParseSplitTriggerData(bossArenaExitData);
+
+    settings.CurrentDefaultParent = BOSS_ARENA;
+    foreach (string[] bossArenaExitSetting in bossArenaExitSettings)
+    {
+        string parameters = bossArenaExitSetting[0];
+        string description =  bossArenaExitSetting[1];
+        string parent = bossArenaExitSetting[2];
+
+        dynamic bossArenaExit = BossArenaExitSplitTrigger.GetMethod("Parse").Invoke(null, new object[] {parameters});
+        vars.BossArenaExits.Add(bossArenaExit);
+
+        vars.CreateSplitTriggerSetting(bossArenaExit.SettingsId, description, parent);
+        vars.CreateSplitTypeSettings(bossArenaExit.SettingsId, allSplitTypes);
+
+        if (vars.DebugToolTips)
+        {
+            settings.SetToolTip(bossArenaExit.SettingsId, bossArenaExit.ToolTip);
         }
     }
 
@@ -827,7 +555,7 @@ init
     
     if (game.ProcessName.ToString() == "DARKSOULS")
     {
-        vars.EventFlagsAOB = new SigScanTarget(8, "56 8B F1 8B 46 1C 50 A1 ?? ?? ?? ?? 32 C9");        
+        vars.EventFlagAOB = new SigScanTarget(8, "56 8B F1 8B 46 1C 50 A1 ?? ?? ?? ?? 32 C9");        
         vars.FrpgNetManImpAOB = new SigScanTarget(2, "83 3D ?? ?? ?? ?? 00 75 4B A1");
         vars.ChrFollowCamAOB = new SigScanTarget(4, "D9 45 08 A1 ?? ?? ?? ?? 51 D9 1C 24 50");
         vars.GameDataManAOB = new SigScanTarget(1, "A1 ?? ?? ?? ?? 8B 40 34 53 32");
@@ -849,6 +577,7 @@ init
         vars.InGameTimeOffsets = new int[] {0x68};
         vars.AreaOffsets = new int[] {0xA12};
         vars.WorldOffsets = new int[] {0xA13};
+        vars.PlayRegionOffsets = new int[] {0xA14};
 
         vars.GetAOBPtr = vars.GetAOBAbsolutePtr;
 
@@ -858,7 +587,7 @@ init
     }
     else if (game.ProcessName.ToString() == "DarkSoulsRemastered")
     {
-        vars.EventFlagsAOB = new SigScanTarget(3, "48 8B 0D ?? ?? ?? ?? 99 33 C2 45 33 C0 2B C2 8D 50 F6");
+        vars.EventFlagAOB = new SigScanTarget(3, "48 8B 0D ?? ?? ?? ?? 99 33 C2 45 33 C0 2B C2 8D 50 F6");
         vars.FrpgNetManImpAOB = new SigScanTarget(3, "48 8B 05 ?? ?? ?? ?? 48 05 08 0A 00 00 48 89 44 24 50 E8 34 FC FD FF");
         vars.ChrFollowCamAOB = new SigScanTarget(3, "48 8B 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 4E 68 48 8B 05 ?? ?? ?? ?? 48 89 48 60");
         vars.GameDataManAOB = new SigScanTarget(3, "48 8B 05 ?? ?? ?? ?? 45 33 ED 48 8B F1 48 85 C0");
@@ -880,6 +609,7 @@ init
         vars.InGameTimeOffsets = new int[] {0xA4};
         vars.AreaOffsets = new int[] {0xA22};
         vars.WorldOffsets = new int[] {0xA23};
+        vars.PlayRegionOffsets = new int[] {0xA24};
 
         vars.GetAOBPtr = vars.GetAOBRelativePtr;
 
@@ -901,7 +631,7 @@ init
         vars.CooldownStopwatch.Start();
         try 
         {
-            vars.EventFlagsPtr = vars.GetAOBPtr(sigScanner, vars.EventFlagsAOB, 7);
+            vars.EventFlagPtr = vars.GetAOBPtr(sigScanner, vars.EventFlagAOB, 7);
             vars.FrpgNetManImpPtr = vars.GetAOBPtr(sigScanner, vars.FrpgNetManImpAOB, 7);
             vars.ChrFollowCamPtr = vars.GetAOBPtr(sigScanner, vars.ChrFollowCamAOB, 7);
             vars.GameDataManPtr = vars.GetAOBPtr(sigScanner, vars.GameDataManAOB, 7);
@@ -911,68 +641,64 @@ init
         catch (Exception e)
         {
             vars.CooldownStopwatch.Restart();
-            throw new Exception(e.ToString() + "\ninit {} needs to be recalled; base pointer creation unsuccessful");
+            throw new Exception(e.ToString() + "\ninit{} needs to be recalled; base pointer creation unsuccessful");
         }
     }
     else
     {
-        throw new Exception("init {} needs to be recalled; waiting to rescan for base pointers");
+        throw new Exception("init{} needs to be recalled; waiting to rescan for base pointers");
     }
 
     vars.CooldownStopwatch.Reset();
 
     // ---------- CREATE DEEP POINTERS AND MEMORY WATCHERS ----------
 
-    vars.Watchers = new MemoryWatcherList();
-    vars.FlagWatchers = new MemoryWatcherList();
+    vars.EventFlagMemoryWatcherList = new MemoryWatcherList();
+    vars.EventFlagMemoryWatcherDictionary = new Dictionary<int, MemoryWatcher<uint>>();
 
-    vars.Watchers.Add(vars.BonfireListSize = new MemoryWatcher<byte>(new DeepPointer(vars.FrpgNetManImpPtr, vars.BonfireListSizeOffsets)));
-    vars.Watchers.Add(vars.Area = new MemoryWatcher<byte>(new DeepPointer(vars.FrpgNetManImpPtr, vars.AreaOffsets)));
-    vars.Watchers.Add(vars.World = new MemoryWatcher<byte>(new DeepPointer(vars.FrpgNetManImpPtr, vars.WorldOffsets)));
+    vars.OtherMemoryWatchers = new MemoryWatcherList();
+
+    vars.OtherMemoryWatchers.Add(vars.BonfireListSize = new MemoryWatcher<byte>(new DeepPointer(vars.FrpgNetManImpPtr, vars.BonfireListSizeOffsets)));
+    vars.OtherMemoryWatchers.Add(vars.Area = new MemoryWatcher<byte>(new DeepPointer(vars.FrpgNetManImpPtr, vars.AreaOffsets)));
+    vars.OtherMemoryWatchers.Add(vars.World = new MemoryWatcher<byte>(new DeepPointer(vars.FrpgNetManImpPtr, vars.WorldOffsets)));
+    vars.OtherMemoryWatchers.Add(vars.PlayRegion = new MemoryWatcher<int>(new DeepPointer(vars.FrpgNetManImpPtr, vars.PlayRegionOffsets)));
     
-    vars.Watchers.Add(vars.ClearCount = new MemoryWatcher<byte>(new DeepPointer(vars.GameDataManPtr, vars.ClearCountOffsets)));
-    vars.Watchers.Add(vars.InGameTime = new MemoryWatcher<uint>(new DeepPointer(vars.GameDataManPtr, vars.InGameTimeOffsets)));
+    vars.OtherMemoryWatchers.Add(vars.ClearCount = new MemoryWatcher<byte>(new DeepPointer(vars.GameDataManPtr, vars.ClearCountOffsets)));
+    vars.OtherMemoryWatchers.Add(vars.InGameTime = new MemoryWatcher<uint>(new DeepPointer(vars.GameDataManPtr, vars.InGameTimeOffsets)));
     
-    vars.Watchers.Add(vars.PlayerX = new MemoryWatcher<float>(new DeepPointer(vars.CoordsBasePtr, vars.PlayerXOffsets)));
-    vars.Watchers.Add(vars.PlayerY = new MemoryWatcher<float>(new DeepPointer(vars.CoordsBasePtr, vars.PlayerYOffsets)));
-    vars.Watchers.Add(vars.PlayerZ = new MemoryWatcher<float>(new DeepPointer(vars.CoordsBasePtr, vars.PlayerZOffsets)));
+    vars.OtherMemoryWatchers.Add(vars.PlayerX = new MemoryWatcher<float>(new DeepPointer(vars.CoordsBasePtr, vars.PlayerXOffsets)));
+    vars.OtherMemoryWatchers.Add(vars.PlayerY = new MemoryWatcher<float>(new DeepPointer(vars.CoordsBasePtr, vars.PlayerYOffsets)));
+    vars.OtherMemoryWatchers.Add(vars.PlayerZ = new MemoryWatcher<float>(new DeepPointer(vars.CoordsBasePtr, vars.PlayerZOffsets)));
     
-    vars.Watchers.Add(vars.InitX = new MemoryWatcher<float>(new DeepPointer(vars.BaseCPtr, vars.InitXOffsets)));
-    vars.Watchers.Add(vars.InitY = new MemoryWatcher<float>(new DeepPointer(vars.BaseCPtr, vars.InitYOffsets)));
-    vars.Watchers.Add(vars.InitZ = new MemoryWatcher<float>(new DeepPointer(vars.BaseCPtr, vars.InitZOffsets)));
+    vars.OtherMemoryWatchers.Add(vars.InitX = new MemoryWatcher<float>(new DeepPointer(vars.BaseCPtr, vars.InitXOffsets)));
+    vars.OtherMemoryWatchers.Add(vars.InitY = new MemoryWatcher<float>(new DeepPointer(vars.BaseCPtr, vars.InitYOffsets)));
+    vars.OtherMemoryWatchers.Add(vars.InitZ = new MemoryWatcher<float>(new DeepPointer(vars.BaseCPtr, vars.InitZOffsets)));
     
     vars.BonfireLinkedListFirstItemDeepPtr = new DeepPointer(vars.FrpgNetManImpPtr, vars.BonfireLinkedListFirstItemOffsets);
     vars.CharacterLoadedDeepPtr = new DeepPointer(vars.ChrFollowCamPtr, vars.CharacterLoadedOffsets);
 
     // ---------- EVENT FLAG MEMORY WATCHERS ----------
 
-    vars.OffsetMemoryWatcherExists = new Dictionary<int, bool>();
+    vars.OffsetMemoryWatcherExists = new HashSet<int>();
 
-    Action<string> WatchEventFlag = ((flagId) =>
+    foreach (dynamic eventFlag in vars.EventFlags)
     {
-        Tuple<int, uint> tup = vars.GetEventFlagOffsetAndMask(flagId);
-        int finalOffset = tup.Item1;
-        uint mask = tup.Item2;
-        var offsets = new int[] {0, finalOffset};
-        
-        vars.EventFlags.Offsets[flagId] = finalOffset;
-        vars.EventFlags.Masks[flagId] = mask;
-
-        if (!vars.OffsetMemoryWatcherExists.ContainsKey(finalOffset))
+        if (!vars.OffsetMemoryWatcherExists.Contains(eventFlag.Offset))
         {
-            var temp = new MemoryWatcher<uint>(new DeepPointer(vars.EventFlagsPtr, offsets));
-            vars.EventFlagOffsets.MemoryWatchers[finalOffset] = temp;
-            vars.FlagWatchers.Add(temp);
+            var offsets = new int[] {0, eventFlag.Offset};
+            var memoryWatcher = new MemoryWatcher<uint>(new DeepPointer(vars.EventFlagPtr, offsets));
+            vars.EventFlagMemoryWatcherDictionary[eventFlag.Offset] = memoryWatcher;
+            vars.EventFlagMemoryWatcherList.Add(memoryWatcher);
 
-            vars.OffsetMemoryWatcherExists[finalOffset] = true;
+            vars.OffsetMemoryWatcherExists.Add(eventFlag.Offset);
         }
-    });
-
-    foreach (string flagId in vars.EventFlags.Ids)
-    {
-        WatchEventFlag(flagId);
     }
 }
+
+// onStart
+// {
+
+// }
 
 onReset
 {
@@ -981,8 +707,8 @@ onReset
 
 update
 {
-    vars.Watchers.UpdateAll(game);
-    vars.FlagWatchers.UpdateAll(game);
+    vars.EventFlagMemoryWatcherList.UpdateAll(game);
+    vars.OtherMemoryWatchers.UpdateAll(game);
 
     current.CharLoaded = vars.PtrResolves(vars.CharacterLoadedDeepPtr);
 }
@@ -991,9 +717,6 @@ split
 {
     bool split = false;
     
-    var playerCoords = Tuple.Create(vars.PlayerX.Current, vars.PlayerY.Current, vars.PlayerZ.Current);
-    var initCoords = Tuple.Create(vars.InitX.Current, vars.InitY.Current, vars.InitZ.Current);
-
     // ---------- LOADING SCREEN ----------
 
     // When character loads in (start of loading screen)
@@ -1051,21 +774,17 @@ split
         vars.QuitoutDetected = true;
     }
 
-    // ---------- LOAD-IN POSITION BOUNDING BOX SPLITS ----------
+    // ---------- INITIAL POSITION BOUNDING BOX SPLITS ----------
 
     if (vars.CheckInitPosition && (vars.InitX.Changed || vars.InitY.Changed || vars.InitZ.Changed))
     {
-        foreach (string boxId in vars.LoadInBoundingBoxes.Ids)
+        foreach (dynamic boundingBox in vars.InitialPositionBoundingBoxes)
         {
-            if (settings[boxId] && !vars.SplitTriggered[boxId])
+            if (settings[boundingBox.SettingsId] && !boundingBox.Triggered && boundingBox.ContainsCoordinates(vars.InitX.Current, vars.InitY.Current, vars.InitZ.Current))
             {
-                Tuple<float, float, float, float, float, float> boundingCoords = vars.LoadInBoundingBoxes.Coords[boxId];
-                if (vars.WithinBoundingBox(initCoords, boundingCoords))
-                {
-                    split = true;
-                    vars.SplitTriggered[boxId] = true;
-                    break;
-                }
+                split = true;
+                boundingBox.Triggered = true;
+                break;
             }
         }
         vars.CheckInitPosition = false;
@@ -1079,18 +798,13 @@ split
         bool upwarpDetected = false;
         if (vars.PlayerX.Changed || vars.PlayerY.Changed || vars.PlayerZ.Changed)
         {
-            foreach (string boxId in vars.UpwarpBoundingBoxes.Ids)
+            foreach (dynamic boundingBox in vars.UpwarpBoundingBoxes)
             {
-                if (settings[boxId] && !vars.SplitTriggered[boxId])
+                if (settings[boundingBox.SettingsId] && !boundingBox.Triggered && boundingBox.ContainsCoordinates(vars.PlayerX.Current, vars.PlayerY.Current, vars.PlayerZ.Current))
                 {
-                    Tuple<float, float, float, float, float, float> boundingCoords = vars.UpwarpBoundingBoxes.Coords[boxId];
-
-                    if (vars.WithinBoundingBox(playerCoords, boundingCoords))
-                    {
-                        vars.SplitTriggered[boxId] = true;
-                        upwarpDetected = true;
-                        break;
-                    }
+                    boundingBox.Triggered = true;
+                    upwarpDetected = true;
+                    break;
                 }
             }
         }
@@ -1102,7 +816,7 @@ split
 
         if (upwarpDetected)
         {
-            if (settings[vars.RETROACTIVE])
+            if (settings[vars.RETROACTIVE_ID])
             {
                 vars.RetroactiveSplitTriggered = true;
             }
@@ -1115,23 +829,19 @@ split
 
     // ---------- EVENT FLAG SPLITS ----------
 
-    foreach (string flagId in vars.EventFlags.Ids)
+    foreach (dynamic eventFlag in vars.EventFlags)
     {
-        if (settings[flagId] && !vars.SplitTriggered[flagId])
+        if (settings[eventFlag.SettingsId] && !eventFlag.Triggered)
         {
-            int flagOffset = vars.EventFlags.Offsets[flagId];
-            uint flagMask = vars.EventFlags.Masks[flagId];
+            uint eventFlagMemory = vars.EventFlagMemoryWatcherDictionary[eventFlag.Offset].Current;
 
-            MemoryWatcher<uint> flagMem = vars.EventFlagOffsets.MemoryWatchers[flagOffset];
-
-            // If flag is set.
-            if (flagMem.Changed && ((uint) flagMem.Current & flagMask) != 0)
+            if ((eventFlagMemory & eventFlag.Mask) != 0)
             {
-                vars.SplitTriggered[flagId] = true;
+                eventFlag.Triggered = true;
 
-                string imm = flagId + vars.IMMEDIATE_SPLIT_TYPE.Item1;
-                string quit = flagId + vars.QUITOUT_SPLIT_TYPE.Item1;
-                string nonquit = flagId + vars.NON_QUITOUT_SPLIT_TYPE.Item1;
+                string imm = eventFlag.SettingsId + vars.IMMEDIATE_SPLIT_TYPE.Item1;
+                string quit = eventFlag.SettingsId + vars.QUITOUT_SPLIT_TYPE.Item1;
+                string nonquit = eventFlag.SettingsId + vars.NON_QUITOUT_SPLIT_TYPE.Item1;
 
                 if (settings[imm])
                 {
@@ -1155,7 +865,8 @@ split
 
     // ---------- BONFIRE SPLITS ----------
 
-    int bonfireLitId = -1;
+    string bonfireLitIdString = "";
+
     int bonfireObjectOffset = vars.BonfireObjectOffset;
     int bonfireIdOffset = vars.BonfireIdOffset;
     int bonfireStateOffset = vars.BonfireStateOffset;
@@ -1173,15 +884,13 @@ split
             int bonfireId = memory.ReadValue<int>(bonfirePtr + bonfireIdOffset);
             int bonfireState = memory.ReadValue<int>(bonfirePtr + bonfireStateOffset);
 
-            string bonfireIdString = bonfireId.ToString();
-
-            bool splitTriggered = true;
-            if (vars.SplitTriggered.TryGetValue(bonfireIdString, out splitTriggered))
+            dynamic bonfire;
+            if (vars.Bonfires.TryGetValue(bonfireId, out bonfire))
             {
-                if (settings[bonfireIdString] && !splitTriggered && bonfireState > 0)
+                if (settings[bonfire.SettingsId] && !bonfire.Triggered && bonfireState > 0)
                 {
-                    vars.SplitTriggered[bonfireIdString] = true;
-                    bonfireLitId = bonfireId;
+                    bonfire.Triggered = true;
+                    bonfireLitIdString = bonfire.SettingsId;
                     break;
                 }
             }
@@ -1190,10 +899,8 @@ split
         }
     }
 
-    if (bonfireLitId > 0)
-    {
-        string bonfireLitIdString = bonfireLitId.ToString();
-        
+    if (bonfireLitIdString != "")
+    {       
         string imm = bonfireLitIdString + vars.IMMEDIATE_SPLIT_TYPE.Item1;
         string quit = bonfireLitIdString + vars.QUITOUT_SPLIT_TYPE.Item1;
         string nonquit = bonfireLitIdString + vars.NON_QUITOUT_SPLIT_TYPE.Item1;
@@ -1216,21 +923,25 @@ split
         }
     }
 
-    // ---------- PLAYER POSITION BOUNDING BOX SPLITS ----------
+    // ---------- CURRENT POSITION BOUNDING BOX SPLITS ----------
 
-    foreach (string boxId in vars.CurrentPositionBoundingBoxes.Ids)
+    foreach (dynamic boundingBox in vars.CurrentPositionBoundingBoxes)
     {
-        if (settings[boxId] && !vars.SplitTriggered[boxId])
+        if (settings[boundingBox.SettingsId] && !boundingBox.Triggered)
         {
-            Tuple<float, float, float, float, float, float> boundingCoords = vars.CurrentPositionBoundingBoxes.Coords[boxId];
-            if (vars.WithinBoundingBox(playerCoords, boundingCoords))
+            if (boundingBox.ContainsCoordinates(vars.PlayerX.Current, vars.PlayerY.Current, vars.PlayerZ.Current))
             {
-                vars.SplitTriggered[boxId] = true;
+                boundingBox.Triggered = true;
 
-                string quit = boxId + vars.QUITOUT_SPLIT_TYPE.Item1;
-                string nonquit = boxId + vars.NON_QUITOUT_SPLIT_TYPE.Item1;
+                string imm = boundingBox.SettingsId + vars.IMMEDIATE_SPLIT_TYPE.Item1;
+                string quit = boundingBox.SettingsId + vars.QUITOUT_SPLIT_TYPE.Item1;
+                string nonquit = boundingBox.SettingsId + vars.NON_QUITOUT_SPLIT_TYPE.Item1;
 
-                if (settings[quit])
+                if (settings[imm])
+                {
+                    split = true;
+                }
+                else if (settings[quit])
                 {
                     vars.QuitoutSplitTriggered = true;
                 }
@@ -1248,23 +959,54 @@ split
 
     // ---------- ZONE TRANSITION SPLITS ----------
 
-    foreach (string zoneTransitionId in vars.ZoneTransitions.Ids)
+    foreach (dynamic zoneTransition in vars.ZoneTransitions)
     {
-        if (settings[zoneTransitionId] && !vars.SplitTriggered[zoneTransitionId])
+        if (settings[zoneTransition.SettingsId] && !zoneTransition.Triggered 
+        && vars.Area.Old == zoneTransition.OldArea && vars.World.Old == zoneTransition.OldWorld 
+        && vars.Area.Current == zoneTransition.NewArea && vars.World.Current == zoneTransition.NewWorld)
         {
-            Tuple<int, int, int, int> zoneTransitionTuple = vars.ZoneTransitions.Tuples[zoneTransitionId];
-            int oldArea = zoneTransitionTuple.Item1;
-            int oldWorld = zoneTransitionTuple.Item2;
-            int newArea = zoneTransitionTuple.Item3;
-            int newWorld = zoneTransitionTuple.Item4;
+            zoneTransition.Triggered = true;
 
-            if (vars.Area.Old == oldArea && vars.World.Old == oldWorld && vars.Area.Current == newArea && vars.World.Current == newWorld)
+            string imm = zoneTransition.SettingsId + vars.IMMEDIATE_SPLIT_TYPE.Item1;
+            string quit = zoneTransition.SettingsId + vars.QUITOUT_SPLIT_TYPE.Item1;
+            string nonquit = zoneTransition.SettingsId + vars.NON_QUITOUT_SPLIT_TYPE.Item1;
+
+            if (settings[imm])
             {
-                vars.SplitTriggered[zoneTransitionId] = true;
+                split = true;
+            }
+            else if (settings[quit])
+            {
+                vars.QuitoutSplitTriggered = true;
+            }
+            else if (settings[nonquit])
+            {
+                vars.NonQuitoutLoadingSplitTriggered = true;
+            }
+            else
+            {
+                vars.LoadingSplitTriggered = true;
+            }
+        }
+    }
 
-                string imm = zoneTransitionId + vars.IMMEDIATE_SPLIT_TYPE.Item1;
-                string quit = zoneTransitionId + vars.QUITOUT_SPLIT_TYPE.Item1;
-                string nonquit = zoneTransitionId + vars.NON_QUITOUT_SPLIT_TYPE.Item1;
+    // ---------- BOSS ARENA SPLITS ----------
+
+    foreach (dynamic bossArenaExit in vars.BossArenaExits)
+    {
+        if (settings[bossArenaExit.SettingsId] && !bossArenaExit.Triggered)
+        {
+            int eventFlagOffset = bossArenaExit.Offset;
+            uint eventFlagMask = bossArenaExit.Mask;
+            uint eventFlagMemory = vars.EventFlagMemoryWatcherDictionary[eventFlagOffset].Current;
+
+            if ((eventFlagMemory & eventFlagMask) != 0 && vars.PlayRegion.Current != bossArenaExit.BossArenaPlayRegionId)
+            {
+                bossArenaExit.Triggered = true;
+
+                string imm = bossArenaExit.SettingsId + vars.IMMEDIATE_SPLIT_TYPE.Item1;
+                string quit = bossArenaExit.SettingsId + vars.QUITOUT_SPLIT_TYPE.Item1;
+                string nonquit = bossArenaExit.SettingsId + vars.NON_QUITOUT_SPLIT_TYPE.Item1;
 
                 if (settings[imm])
                 {
@@ -1306,7 +1048,6 @@ split
         timer.Run[timer.CurrentSplitIndex].SplitTime = vars.LoadInTimerTime;
         timer.CurrentSplitIndex++;
         vars.RetroactiveSplitTriggered = false;
-        split = false;
     }
 
     return split;

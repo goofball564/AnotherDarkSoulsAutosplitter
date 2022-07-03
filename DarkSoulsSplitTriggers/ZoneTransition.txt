@@ -1,0 +1,9 @@
+1,18,2,10|Undead Asylum to Firelink Shrine
+2,10,1,18|Firelink Shrine to Undead Asylum
+0,15,1,15|Sen's Fortress to Anor Londo
+1,15,0,15|Anor Londo to Sen's Fortress
+1,15,0,11|Anor Londo to Painted World
+0,11,1,15|Painted World to Anor Londo
+0,12,1,12|Darkroot Basin to DLC
+0,16,0,18|The Abyss to Firelink Altar
+1,18,0,18|Firelink Shrine to Firelink Altar

@@ -1,0 +1,32 @@
+    // Splits triggered by an event flag being set.
+    // Event flag may be less than 8 characters, or padded to 8 if you wish.
+    // Format: event flag id | event flag description
+
+    // TODO
+    // chloranthy ring
+    // dark wood grain ring
+    // white seance ring
+    // hydra dead
+    // embers for all achievements?
+    // ?
+
+    // Splits triggered by a bonfire being lit.
+    // Every bonfire in this list starts out unlit and the autosplitter logic depends on this.
+    // Format: bonfire ID | bonfire description
+
+    // Bounding box splits triggered based on where the player is currently.
+    // May have decimals.
+    // Format: x min, x max, y min, y max, z min, z max | description
+
+    // Bounding box splits triggered if player upwarps into them.
+    // (if the player is in them within a certain short amount of time of loading in)
+    // Same format as the above bounding box splits.
+
+    // Bounding box splits triggered based on where the player character is going to load in.
+    // Same format as the above bounding box splits.
+
+    // Splits Triggered by traveling between separate locations in the game.
+    // Format: old area, old world, new area, new world | description
+
+    // Split Triggered by exiting a boss's arena after their death.
+    // Format: boss death flag, boss arena multiplayer region ID | description
