@@ -6,4 +6,4 @@
 0,11,1,15|Painted World to Anor Londo
 0,12,1,12|Darkroot Basin to DLC
 0,16,0,18|The Abyss to Firelink Altar
-1,18,0,18|Firelink Shrine to Firelink Altar
+2,10,0,18|Firelink Shrine to Firelink Altar
