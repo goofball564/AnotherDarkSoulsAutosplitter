@@ -5,7 +5,7 @@ A Cursed Autosplitter for Dark Souls: Prepare to Die Edition and Dark Souls: Rem
 
 * This script does not currently fully support versions of Dark Souls Remastered other than current patch
 
-* It hasn't been tested yet on a legally acquired copy of Prepare to Die Edition.
+* It hasn't been tested yet on a legally acquired copy of Prepare to Die Edition (but it most likely works with one).
 
 * Not every single event flag and bonfire has been tested as being correct. But they're probably mostly if not completely fine :)
 
@@ -25,6 +25,9 @@ Be sure "Split" is checked, under the Script Path you selected. </br>
 Select where you want to split in the "Advanced Settings" box. Splits do not depend on order and happen the ***first time*** a condition is met only.
 
 Start the timer before any split should occur, don't reset the timer in the middle of the run, and don't load into the wrong save file during the run.
+
+### How to Update </br>
+Close Livesplit. Download the files again. Replace the files you already have with the new ones. Livesplit will remember your settings and you won't have to set them again.
 
 ### How Splits Work </br>
 
