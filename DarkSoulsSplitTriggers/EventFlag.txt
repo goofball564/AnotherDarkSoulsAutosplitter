@@ -36,8 +36,7 @@ Boss Deaths
 11810900|Stray Demon
 11010901|Taurus Demon
 
-Doors, Elevators, and Shortcuts
-11510220|Anor Londo, Elevator Active
+Doors
 11510110|Anor Londo, Door to Gwynevere
 61200500|Darkroot Garden, Crest of Artorias Door
 61200501|Darkroot Garden, Sif Door
@@ -46,11 +45,23 @@ Doors, Elevators, and Shortcuts
 11810112|Northern Undead Asylum, Asylum Demon Door
 11810110|Northern Undead Asylum, Big Pilgrim Door
 
+Elevators
+11510220|Anor Londo, Elevator Active
+
+Levers
+11300900|Catacombs, Entrance Lever
+11705091|Duke's Archives, First Lever
+11705090|Duke's Archives, Second Lever
+11600200|New Londo Ruins, Seal Opened
+
 NPC Flags
 71010000|Andre, Talk To For First Time
+71510000|Blacksmith Giant, Talk To For First Time
+71500001|Crestfallen Merchant, Talk To For First Time
 1121|Dusk, Rescued From Golem
 1122|Dusk, Available for Summon (Said Yes After Rescue)
 1125|Dusk, Dead
+1575|Lautrec, Dead
 1702|Oswald, Dead
 1513|Siegmeyer, Dead
 1764|Shiva Bodyguard, Dead
@@ -63,6 +74,7 @@ Ring Item Pickups
 51600380|Valley of the Drakes, Red Tearstone Ring
 
 Non-Ring Item Pickups
+51510940|Anor Londo, Blacksmith Giant Hammer
 51510560|Anor Londo, Dragon Tooth
 51200200|Darkroot Basin, Grass Crest Shield
 51810080|Northern Undead Asylum, Peculiar Doll
@@ -89,11 +101,6 @@ Non-Boss Fog Gates
 11810090|Northern Undead Asylum, Fog Gate
 11500090|Sen's Fortress, Fog Gate 1
 11500091|Sen's Fortress, Fog Gate 2
-
-Levers
-11300900|Catacombs, Entrance Lever
-11705091|Duke's Archives, First Lever
-11705090|Duke's Archives, Second Lever
 
 Boss Fog Gates
 11415390|Bed of Chaos
