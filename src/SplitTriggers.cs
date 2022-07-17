@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace SplitTriggers
 {
@@ -167,7 +168,14 @@ namespace SplitTriggers
             if (parameters.Length != NUM_PARAMETERS)
                 throw new ArgumentException("Bounding Box Split Trigger must have 6 parameters: x min, x max, y min, y max, z min, z max: \n" + commaSeparatedParameters);
 
-            return new BoundingBoxSplitTrigger(Single.Parse(parameters[0]), Single.Parse(parameters[1]), Single.Parse(parameters[2]), Single.Parse(parameters[3]), Single.Parse(parameters[4]), Single.Parse(parameters[5]));
+            return new BoundingBoxSplitTrigger(
+                Single.Parse(parameters[0], CultureInfo.InvariantCulture), 
+                Single.Parse(parameters[1], CultureInfo.InvariantCulture), 
+                Single.Parse(parameters[2], CultureInfo.InvariantCulture), 
+                Single.Parse(parameters[3], CultureInfo.InvariantCulture), 
+                Single.Parse(parameters[4], CultureInfo.InvariantCulture), 
+                Single.Parse(parameters[5], CultureInfo.InvariantCulture)
+            );
         }
 
         public bool ContainsCoordinates(float x, float y, float z)
