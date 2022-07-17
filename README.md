@@ -3,6 +3,8 @@ A Cursed Autosplitter for Dark Souls: Prepare to Die Edition and Dark Souls: Rem
 
 ### Current Limitations
 
+* If you live in a locale that uses commas as a decimal separator, bounding box splits don't work properly. Sorry about that. A fix is incoming.
+
 * This script does not currently fully support versions of Dark Souls Remastered other than current patch
 
 * It hasn't been tested yet on a legally acquired copy of Prepare to Die Edition (but it most likely works with one).
