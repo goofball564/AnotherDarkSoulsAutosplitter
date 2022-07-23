@@ -64,8 +64,6 @@ startup
 
     vars.RETROACTIVE_ID = "retroactive";
 
-    vars.EVENT_FLAG_ID_LENGTH = 8;
-
     const string scriptFileName = "DarkSouls1.asl";
 
     const string splitTriggersFolderName = "DarkSoulsSplitTriggers";
@@ -93,14 +91,13 @@ startup
     // Also, LiveSplit.UI.Components.ASLComponent doesn't seem to be in the
     // namespace accessible from ASL Scripts, so we can't check if an object is
     // that type directly and instead use a string comparison.
-    var doc = new System.Xml.XmlDocument();
     foreach(LiveSplit.UI.Components.ILayoutComponent ilc in timer.Layout.LayoutComponents)
     {
         LiveSplit.UI.Components.IComponent component = ilc.Component;
         if (component.GetType().ToString() == "LiveSplit.UI.Components.ASLComponent")
         {
-            System.Xml.XmlNode componentSettings = component.GetSettings(doc);
-            string path = componentSettings["ScriptPath"].FirstChild.Value;
+            dynamic componentSettings = component.GetSettingsControl(0);
+            string path = componentSettings.ScriptPath;
             if (path.EndsWith(scriptFileName))
             {
                 scriptPath = path;
