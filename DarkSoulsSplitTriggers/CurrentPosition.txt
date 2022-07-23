@@ -1,4 +1,5 @@
 118,126,-330,-300,122,129|Demon Ruins, Firesage Elevator Clip (Y=-300)
+85,91,16,17,178,190|Sen's Fortress, Gate
 
 Deprecated
 86,90,16,17,178,179|Sen's Fortress, Gate (Box Too Small)
