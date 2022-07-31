@@ -145,9 +145,6 @@ startup
     Type eventFlagListType = typeof(List<>).MakeGenericType(EventFlagSplitTrigger);
     vars.EventFlags = Activator.CreateInstance(eventFlagListType);
 
-    // Type bonfireDictType = typeof(Dictionary<,>).MakeGenericType(typeof(int), BonfireLitSplitTrigger);
-    // vars.Bonfires = Activator.CreateInstance(bonfireDictType);
-
     vars.Bonfires = new Dictionary<int, dynamic>();
 
     Type boundingBoxListType = typeof(List<>).MakeGenericType(BoundingBoxSplitTrigger);
@@ -618,7 +615,7 @@ init
     // ---------- GET BASE POINTERS ----------
 
     // How long to wait before retrying AOB scanning if AOB scanning fails.
-    const int MILLISECONDS_TO_WAIT_BEFORE_RESCAN = 100;
+    const int MILLISECONDS_TO_WAIT_BEFORE_RESCAN = 1000;
 
     // Stopwatch is defined in startup block and is used to mimic
     // Thread.Sleep without locking the Livesplit UI; 
@@ -650,9 +647,6 @@ init
 
     // ---------- CREATE DEEP POINTERS AND MEMORY WATCHERS ----------
 
-    vars.EventFlagMemoryWatcherList = new MemoryWatcherList();
-    vars.EventFlagMemoryWatcherDictionary = new Dictionary<int, MemoryWatcher<uint>>();
-
     vars.OtherMemoryWatchers = new MemoryWatcherList();
 
     vars.OtherMemoryWatchers.Add(vars.BonfireListSize = new MemoryWatcher<byte>(new DeepPointer(vars.FrpgNetManImpPtr, vars.BonfireListSizeOffsets)));
@@ -676,6 +670,8 @@ init
 
     // ---------- EVENT FLAG MEMORY WATCHERS ----------
 
+    vars.EventFlagMemoryWatcherList = new MemoryWatcherList();
+    vars.EventFlagMemoryWatcherDictionary = new Dictionary<int, MemoryWatcher<uint>>();
     vars.OffsetMemoryWatcherExists = new HashSet<int>();
 
     foreach (dynamic eventFlag in vars.EventFlags)
@@ -691,11 +687,6 @@ init
         }
     }
 }
-
-// onStart
-// {
-
-// }
 
 onReset
 {
