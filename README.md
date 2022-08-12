@@ -61,5 +61,7 @@ Splits may also have several sub-options that dictate when the split occurs. The
 
 * If you check none of these, it will default to splitting on the next load screen without checking whether there has been a quitout.
 
+Upwarps have a special option: "Retroactive Upwarp Splits" means that upwarps, which are detected within a few frames of loading in, set the split time to be the time during the loading screen, not the time when the upwarp was detected. This allows upwarp splits to be consistent with manually splitting on the load screen before an upwarp.
+
 ### I'm Having Issues </br>
 Contact me on Discord at Jaaaaack#8889 (name has 5 a's, giraffe profile picture)
